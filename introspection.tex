@@ -244,7 +244,7 @@ Because all the layers of non-linearities are ``entwined together'', apparently 
 These ``strands'' $\NewSym{strand.png}$ are simpler neural networks, for instance with smaller widths and depths, so they can be described by shorter weight vectors.  Precisely for this reason, a  $\NewSym{strand.png}$ can be presented as input to its own neural network.  We  \uline{cannot pass the entire network $\vect{F}$ to itself}, due to Cantor's theorem, which says $\mathbb{X} = \mathbb{X}^{\mathbb{X}}$ is impossible.
 \fi
 
-Let $\overline{\vect{F}} = \NewSym{header.png} $ header, $\underline{\vect{F}} = \NewSym{footer.png} $ footer, $\vect{f}_i = \NewSym{strand.png}$ strands, then:
+Let $\overline{\vect{F}} = \NewSym{header.png} $ header, $\underline{\vect{F}} = \NewSym{footer.png} $ footer, $\vect{f}_i = \NewSym{strand.png}$ strands, then (abusing the $\bigcup$ notation):
 \begin{equation}
 \vect{F} = \overline{\vect{F}} \circ \bigcup \vect{f}_i \circ \underline{\vect{F}}
 \end{equation}
@@ -254,13 +254,21 @@ Let $\overline{\vect{F}} = \NewSym{header.png} $ header, $\underline{\vect{F}} =
 Each $\NewSym{strand.png}$ roughly corresponds to a single \textbf{proposition} in logic-based AI. Such propositions may be conditional or plain statements.
 \fi
 
-\begin{equation}
-\Theta \in \NewSym{bbTheta.png}
-\end{equation}
-\begin{equation}
-\vcenter{\hbox{\includegraphics[scale=0.6]{tangent-bundle-and-sheaf.png}}}
-\end{equation}
+\section{Structure of memories}
 
+The ``main memory'' $\vect{F}$ can take the form of a tree ($\Tree$), graph ($\Graph$), or hyper-graph ($\Hypergraph$), with increasing complexity.
+
+The \textbf{mental state} $\vect{x}$, or ``working memory'', can also assume the above-mentioned forms.
+
+Currently I am not sure whether to place \textbf{episodic memory} inside $\vect{F}$ or as a separate module outside $\vect{F}$.
+
+We need to organize the $\NewSym{strand.png}$'s in the form of $\Tree$, $\Graph$ or $\Hypergraph$, in such a way that the resulting structure is also a neural network, or more generally a mathematical \textbf{function} in Hilbert space.
+
+But there is one simple way:  Basically, a deep network is automatically ``tree-like'' because of its many layers (\textbf{levels}) of weights organized hierarchically.  Thus we can build a network like this:
+\begin{equation}
+\vcenter{\hbox{\includegraphics[scale=0.7]{introspection-tree-bank.png}}}
+\end{equation}
+The {\color{red}attention mechanism} selects a number of $\NewSym{strand.png}$'s to be the \textbf{current state} or ``working memory''.  Notice that the input size is bigger than the output size, which reflects the structure of the logical \textbf{consequece operator} $\vdash$.
 
 \section{Overall architecture}
 
@@ -285,26 +293,80 @@ Viewing the ``information flow'' in a simplified way, we notice a ``second'' pas
 \begin{equation}
 \vcenter{\hbox{\includegraphics[scale=0.5]{introspection-flow.png}}}
 \end{equation}
-This mode of operation has always been standard in logic-based systems.  The $\NewSym{IRNN.png}$ is the $\KB$.  The vertical pass represents reading/writing information to/from $\KB$.  The horizontal pass represents using the $\KB$ for logical inference (thinking), ie:
+\ifdefined\chinchin
+这种操作上的结构在经典逻辑 AI 是「免费赠品」，但似乎还未有人提出过神经网络的做法。
+\else
+This operational architecture has always been a ``free gift'' in logic-based AI systems, but it seems that a neural-network implementation has not been proposed before.
+\fi
+
+对应於经典逻辑 AI：
 \begin{equation}
-\vect{x}_n  \cup \KB \sststile{}{} \vect{x}_{n+1}
+\NewSym{IRNN.png} = \KB 
 \end{equation}
+\begin{itemize}
+	\item The \textbf{horizontal pass} represents using the $\KB$ for logical inference (thinking), ie:
+	\begin{equation}
+	\vect{x}_n  \cup \KB \sststile{}{} \vect{x}_{n+1}
+	\end{equation}
 
-\section{Structure of memories}
+	\item The \textbf{vertical pass} represents reading/writing information to/from $\KB$.  It performs 2 operations:
 
-The ``main memory'' $\vect{F}$ can take the form of a tree ($\Tree$), graph ($\Graph$), or hyper-graph ($\Hypergraph$), with increasing complexity.
+	\begin{itemize}
+		\item $\vect{x} = $ working memory 会因为 \textbf{注意力} (attention) 而改变，所以 $\vect{x}_{n+1}$ 并不直接进入下一轮的 iteration，而是先经过 $\KB$ 的 attentional change。
 
-The \textbf{mental state} $\vect{x}$, or ``working memory'', can also assume the above-mentioned forms.
+		\item $\vect{x}$ 是 $\KB$ 的一部分，所以 $\vect{x}_{n+1}$ 改变了，$\KB$ 也要 update。
+	\end{itemize}
 
-Currently I am not sure whether to place \textbf{episodic memory} inside $\vect{F}$ or as a separate module outside $\vect{F}$.
+\end{itemize}
 
-We need to organize the $\NewSym{strand.png}$'s in the form of $\Tree$, $\Graph$ or $\Hypergraph$, in such a way that the resulting structure is also a neural network, or more generally a mathematical \textbf{function} in Hilbert space.
+\ifdefined\chinchin
+\section{几何结构}
+\else
+\section{Geometric structure}
+\fi
 
-But there is one simple way:  Basically, a deep network is automatically ``tree-like'' because of its many layers (\textbf{levels}) of weights organized hierarchically.  Thus we can build a network like this:
+[ 此段对熟悉微分几何的人或许有帮助，否则可以略过。]
+
+首先我们有一个很 standard 的 Hamiltonian 力学系统／控制系统的结构：
 \begin{equation}
-\vcenter{\hbox{\includegraphics[scale=0.7]{introspection-tree-bank.png}}}
+\label{tangent-bundle}
+\vcenter{\hbox{\includegraphics[scale=0.6]{tangent-bundle.png}}}
 \end{equation}
-The {\color{red}attention mechanism} selects a number of $\NewSym{strand.png}$'s to be the \textbf{current state} or ``working memory''.  Notice that the input size is bigger than the output size, which reflects the structure of the logical \textbf{consequece operator} $\vdash$.
+$\vect{x} = \mbox{working memory} \subset \vect{\theta}$，$\vect{\theta}$ 代表整个 $\KB$ 的状态，而 $\vect{\theta} \in \NewSym{bbTheta.png}$，后者是所有可能 $\KB$ 的空间。
+\begin{equation}
+\dot{\vect{x}} = \vect{F}(\vect{x})
+\end{equation}
+是系统的\textbf{状态方程}。 换句话说，在思维空间 $\NewSym{bbTheta}$ 中的一个点就是思维状态 $\vect{x} \subset \vect{\theta} \in \NewSym{bbTheta}$，而 $F$ 给出的是这个点在\textbf{思考}过程中的的「运动速度」$= \dot{\vect{x}}$。  换句话说，$\vect{F}$ 定义了一个 vector field，它是思维空间中思维的 ``flow''，或者可以叫作「理性流」。  每个点的速度属於流形 $\NewSym{bbTheta}$ 上的 tangent space，他们的总和就是 tangent bundle。  而 tangent bundle + base manifold （亦即「位置 \& 动量」）构成系统的「相空间」(phase space)。
+
+另外，特别地，有这个 sheaf of functions 的结构：
+\begin{equation}
+\label{sheaf}
+\vcenter{\hbox{\includegraphics[scale=0.6]{sheaf.png}}}
+\end{equation}
+换句话说，给定 $\vect{x} \in \NewSym{bbTheta}$ ，我们可以透过
+\begin{equation}
+\vect{F} = \overline{\vect{F}} \circ (\vect{x} \subset \vect{\theta}) \circ \underline{\vect{F}}
+\end{equation}
+得出 $\vect{F}$，而这个 $\vect{F}$ 再给出对应於这点的 $\dot{\vect{x}}$。
+
+注意 $(\ref{tangent-bundle})$ 和 $(\ref{sheaf})$ 是两个不同的结构，只是它们的 base manifold 相同。 
+
+特别之处在於 $\vect{F}$ 是由参数 $\vect{x} \subset \vect{\theta} \in \NewSym{bbTheta}$ 确定的（因为 $\vect{x}$ 是 $\vect{\theta} = \KB$ 的一部分，而所有可能的 $\KB$ 属於思维空间 $\NewSym{bbTheta}$），换句话说：
+\begin{equation}
+\vect{F}(\vect{x}) \equiv \vect{F}_{\vect{\theta}}(\vect{x}) \equiv \vect{F}(\vect{x} ; \vect{\theta})
+\end{equation}
+这和经典理论并没有抵触，因为经典理论中，$\vect{F}$ 也是位置 $\vect{x}$ 的函数。  更确切地说，位置空间其实是由 $\vect{\theta} \in \NewSym{bbTheta}$ 决定的，$\vect{x}$ 只是 $\vect{\theta}$ 的一部分。
+
+\section{Conclusion}
+
+Using the ``introspective architecture'' we solved 2 major problems in AGI:
+\begin{itemize}
+	\item How to \uline{directly \textbf{insert} knowledge} into $\KB$.
+	
+	\item $\KB$ should be organized as a graph / tree.  But $\KB$ is also a neural network.  We found a ``tree-like'' organization of $\KB$ as a neural network.
+\end{itemize}
+
+It seems that the only major remaining problem now is the design of \textbf{episodic memory}.
 
 \section*{Acknowledgements}
 
