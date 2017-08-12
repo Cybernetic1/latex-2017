@@ -29,8 +29,11 @@
 %\def\chinchin{yes}          % ********** 用中文 *********
 % *************** Delete when not using Chinese or colors **********************
 \ifdefined\chinchin
-	\usepackage{xeCJK}
-	\setCJKmainfont[BoldFont=SimHei,ItalicFont=KaiTi]{SimSun}
+\usepackage{xeCJK}
+\setCJKmainfont[BoldFont=SimHei,ItalicFont=KaiTi]{SimSun}
+\newcommand{\cc}[2]{#1}
+\else
+\newcommand{\cc}[2]{#2}
 \fi
 \usepackage{color}
 %\newcommand{\emp}[1]{\textbf{\textcolor{blue}{#1}}}
@@ -60,7 +63,6 @@
 \newcommand*\rectifier{\vcenter{\hbox{\includegraphics{rectifier.png}}}}
 \newcommand*\KB{\vcenter{\hbox{\includegraphics{KB-symbol.png}}}}
 \newcommand*\KBsmall{\vcenter{\hbox{\includegraphics{KB-symbol2.png}}}}
-\newcommand*\Eye{\vcenter{\hbox{\includegraphics{../eye-symbol.png}}}}
 \newcommand*\NN{\vcenter{\hbox{\includegraphics{NN-symbol.png}}}}
 \newcommand*\Graph{\vcenter{\hbox{\includegraphics{../graph-symbol.png}}}}
 \newcommand*\Hypergraph{\vcenter{\hbox{\includegraphics{../hypergraph-symbol.png}}}}
@@ -84,17 +86,10 @@
 \newsavebox{\MyName}
 \savebox{\MyName}{\includegraphics[scale=0.6]{YKY.png}}
 
-\title{
-\ifdefined\chinchin
-神经网络中的「内省」\\
-(``introspection'' in neural networks)
-\else
-``Introspection'' in neural networks
-\fi
-}
+\title{\cc{神经网络中直接注入知识}{Direct knowledge injection into neural networks}}
 %\normalsize{-- a minimalist cognitive architecture combining\\
 %reinforcement learning and deep learning}}
-\titlerunning{Introspection}
+\titlerunning{Direct knowledge injection}
 \author{\usebox{\MyName} (King-Yin Yan)
 % \\ \footnotesize{General.Intelligence@Gmail.com}
 %\and
@@ -118,11 +113,11 @@
 % \setlength{\parskip}{2.8ex}
 
 \begin{abstract}
-\ifdefined\chinchin
-在本文中「内省」是指智能系统直接读／写知识的能力，此能力在经典 logic-based AI 是免费做到的，但神经网络内的「知识」素来有「黑盒」的问题。  解决办法是让神经网络直接作用在它自身的 weights 上。  
-\else
-In this paper, ``introspection'' refers to the ability of an intelligent agent to access its own knowledge.  This ability comes for free in classical logic-based AI, but neural networks are notorious for the ``black-box'' problem.  The solution is to have the network act on its own weights.
-\fi
+\cc{
+	在人工智能历史上，迄今为止仍未有一个快速的学习算法，可以同时「像教孩子那样」直接注入知识。 经典逻辑 AI 可以直接写入知识，但其学习算法太慢。 深度神经网络的学习算法很快，但它是「黑盒」。 本文提出一个解决方案： 让神经网络直接作用在它自身的 weights 上。
+}{
+	An intelligent agent needs the ability to access its own knowledge, which comes for free in classical logic-based AI, but neural networks are notorious for the ``black-box'' problem.  The solution is to have the network act on its own weights.
+}
 \end{abstract}
 
 %\begin{keywords}
@@ -133,32 +128,32 @@ In this paper, ``introspection'' refers to the ability of an intelligent agent t
 \section{Introduction}
 % \label{sec:0}
 
-\ifdefined\chinchin
-这篇文章说的「内省」的意思是指智能系统有能力读／写它内部的知识。  例如说，一个比较蠢的智能系统可以用 sequence-to-sequence 的方式将中文翻译成英文： 
+\cc{
+智能系统需要有能力读／写它内部的知识。  例如说，一个比较蠢的智能系统可以用 sequence-to-sequence 的方式将中文翻译成英文： 
 \begin{equation}
 \mbox{``}\boxed{中文句子}\mbox{''} \stackrel{\vect{F}}{\longrightarrow} \mbox{``}\boxed{英文句子}\mbox{''}
 \end{equation}
-\else
-By ``introspection'' is meant the ability of an intelligent agent to \textbf{access} (read or write) the contents of its knowledge base.  For example, a dumber agent may use the ``sequence-to-sequence'' technique to translate Chinese sentences into English:
+}{
+An intelligent agent needs the ability to \textbf{access} (read or write) the contents of its knowledge base.  For example, a dumber agent may use the ``sequence-to-sequence'' technique to translate Chinese sentences into English:
 \begin{equation}
 \mbox{``}\boxed{Chinese sentence}\mbox{''} \stackrel{\vect{F}}{\longrightarrow} \mbox{``}\boxed{English sentence}\mbox{''}
 \end{equation}
-\fi
-\ifdefined\chinchin
-$\vect{F}$ 代表系统的函数。  但系统并不真的明白句子的意义，句子只是「水过鸭背」地流过系统。 一个更聪明的系统是： 句子可以\textbf{进入}到 $\vect{F}$ 里。 我所说的「内省」就是这意思。
-\else
-$\vect{F}$ is the system's \textbf{function}.  But the system does not truly understand the sentences' meaning;  The sentences simply ``pass through'' the system.  A more intelligent agent would allow sentences to \textbf{go into} $\vect{F}$.  This is what I mean by ``introspection''.
-\fi
+}
+\cc{
+$\vect{F}$ 代表系统的函数。  但系统并不真的明白句子的意义，句子只是「水过鸭背」地流过系统。 一个更聪明的系统是： 句子可以\textbf{进入}到 $\vect{F}$ 里。
+}{
+$\vect{F}$ is the system's \textbf{function}.  But the system does not truly understand the sentences' meaning;  The sentences simply ``pass through'' the system.  A more intelligent agent would allow sentences to \textbf{go into} $\vect{F}$.
+}
 
-\ifdefined\chinchin
-「内省」亦有 meta-reasoning 的意思，亦即除了\textbf{外在}的知识，系统还拥有关於系统\textbf{自身状态}的知识。 但本文中「内省」是指存取「普通知识」的能力。
-\else
-``Introspection'' also connotes \textbf{meta-reasoning}, which means that, in addition to \textbf{extrinsic knowledge}, the system also possesses knowledge about \textbf{its own states}.  In this paper, we only concern ourselves with the agent's access to extrinsic knowledge.
-\fi
+%\cc{
+%「内省」亦有 meta-reasoning 的意思，亦即除了\textbf{外在}的知识，系统还拥有关於系统\textbf{自身状态}的知识。 但本文中「内省」是指存取「普通知识」的能力。
+%}{
+%``Introspection'' also connotes \textbf{meta-reasoning}, which means that, in addition to \textbf{extrinsic knowledge}, the system also possesses knowledge about \textbf{its own states}.  In this paper, we only concern ourselves with the agent's access to extrinsic knowledge.
+%}
 
 \section{Applications}
 
-Introspection (in the present paper's sense) is useful in:
+DKI (direct knowledge injection) is useful in:
 \begin{itemize}
 	\item learning by instructions, or ``learn by being told'' \\
 	(a technique crucial to accelearating the learning of human knowledge)
@@ -166,7 +161,7 @@ Introspection (in the present paper's sense) is useful in:
 	(the most challenging and highest-level task in logic-based AI)
 \end{itemize}
 
-\ifdefined\chinchin
+\cc{
 举例来说，小孩子的行为是由他内部的知识决定的，「知识决定行为」。
 \begin{itemize}
 	\item 当小孩子看到一个成人做的动作，他会模仿那动作。
@@ -174,8 +169,9 @@ Introspection (in the present paper's sense) is useful in:
 	\vcenter{\hbox{\includegraphics[scale=0.5]{imitation.jpg}}}
 	\end{equation}
 	\item 或者小孩子听到一句说话：「不要吃污糟食物」，他明白了那句说话的意思而改变行为。
+	\item 或者「今天高考放榜了，这本教科书可以丢进垃圾桶」，这句话应该由 working memory $\vect{x}$ 进入到 $\KB$ 里面，影响日后的行为（eg，以后不会再见到那本书）。 
 \end{itemize}
-\else
+}{
 For example, a child's behavior is determined by his internal knowledge; ``Knowledge determines action''.
 \begin{itemize}
 	\item When a toddler watches an adult's gesture, he tries to imitate that gesture:
@@ -183,26 +179,27 @@ For example, a child's behavior is determined by his internal knowledge; ``Knowl
 	\vcenter{\hbox{\includegraphics[scale=0.5]{imitation.jpg}}}
 	\end{equation}
 	\item Or when a child hears a saying:  ``don't eat dirty food'', he understands the words and changes his behavior.
+	\item Or, ``today I graduated from university, no more exams from now on.''  This sentence in work memory $\vect{x}$ should enter into $\KB$ so it would influence subsequent behavior.
 \end{itemize}
-\fi
-\ifdefined\chinchin
-这两个例子都涉及到将「感觉资料」放进 $\vect{F}$ 里面：
-\else
+}
+\cc{
+这些例子都涉及到将「感觉资料」放进 $\vect{F}$ 里面：
+}{
 Both examples involve putting ``sensory data'' into $\vect{F}$:
-\fi
+}
 \begin{equation}
 \boxed{sensory data} \hookrightarrow \vect{F}
 \end{equation}
 
 \section{Cartesian closure}
 
-Introspection requires the functional closure $\mathbb{X} \simeq \mathbb{X}^{\mathbb{X}}$ which yields a \textbf{Cartesian-closed category} (CCC).
+DKI requires the functional closure $\mathbb{X} \simeq \mathbb{X}^{\mathbb{X}}$ which yields a \textbf{Cartesian-closed category} (CCC).
 
-\ifdefined\chinchin
-举例来说，「吃了污糟的食物会肚痛」是一个句子，它经由 $\Eye$ 进入 mental state $\vect{x}$ ，变成 proposition。 但我们希望这逻辑命题变成 $\KB$ 的一部分。 
-\else
-For example, ``eating dirty food causes stomach pains'' is an NL sentence, it enters from $\Eye$ into the mental state $\vect{x}$, as a \textbf{proposition}.  But we want $\vect{x}$ to become part of $\KB$.  
-\fi
+\cc{
+举例来说，「吃了污糟的食物会肚痛」是一个句子，它经由 $\NewSym{eye-symbol.png}$ 进入 mental state $\vect{x}$ ，变成 proposition。 但我们希望这逻辑命题变成 $\KB$ 的一部分。 
+}{
+For example, ``eating dirty food causes stomach pains'' is an NL sentence, it enters from $\NewSym{eye-symbol.png}$ into the mental state $\vect{x}$, as a \textbf{proposition}.  But we want $\vect{x}$ to become part of $\KB$.  
+}
 $\vect{F}$ is the state-transition function:
 \begin{equation}
 \vect{x}_{n+1} = \vect{F}(\vect{x}_n)
@@ -215,60 +212,62 @@ An individual logic rule is a \uline{restriction} of $\vect{F}$ to a specific in
 
 $\vect{F} \equiv \KB$ is the \uline{``union'' of micro-functions}:
 \begin{equation}
-\KB = \bigcup \vect{f}_i
+\KB = \biguplus \vect{f}_i
 \end{equation}
-Or, in a vague sense, $\vect{F}$ is the sum total of objects like $\vect{x}$:
+At this point the meaning of $\biguplus$ is unspecified yet.  $\vect{F}$ is the sum total of objects like $\vect{x}$:
 \begin{equation}
-\vect{F} = \bigcup \vect{x}_i
+\vect{F} = \biguplus \vect{x}_i
 \end{equation}
-\ifdefined\chinchin
+\cc{
 但 $\vect{F}$ 是一个神经网络，它的一般形式是：
-\else
+}{
 But $\vect{F}$ is a neural network;  Its general form is:
-\fi
+}
 \begin{equation}
 \boxed{output} \; \vect{x}_{n+1} = \vect{F}(\vect{x}_n) = \sigmoid \stackrel{1}{W} \; \sigmoid \stackrel{2}{W} \; ..... \; \sigmoid \stackrel{L}{W} \; \vect{x}_n
 \end{equation}
 $L$ = total number of layers.  
-\ifdefined\chinchin
+\cc{
 由於各层的非线性「纠缠在一起」，表面上无法将神经网络「分解」。 直到笔者受了 David Ha \textit{et al} 提出的 PathNet \citep*{Fernando2017} 理论所启发，PathNet 是由一些较小的神经网络 modules 组成，所以或许可以建构如下形式的「丝状神经网络」：
-\else
+}{
 Because all the layers of non-linearities are ``entwined together'', apparently we cannot ``decompose'' a neural network.  That is, until the author hears of David Ha \textit{et al}'s PathNet \citep*{Fernando2017} idea, which is a big network consisting of smaller neural-network modules.  Inspired by that, I propose to construct a ``threaded'' neural network:
-\fi
+}
 \begin{equation}
 \vcenter{\hbox{\includegraphics[scale=0.75]{reticular-NN.png}}}
 \end{equation}
-\ifdefined\chinchin
+\cc{
 这些「丝条 $\NewSym{strand.png}$」可以是简单的神经网络，例如每个的宽度或深度很小，因而可以用较短的 weights vector 描述。  正是因为这原因，一个 $\NewSym{strand.png}$ 本身可以作为神经网络的输入。 但整个神经网络 $\vect{F}$ \uline{无法输入自己}，因为根据 Cantor's theorem，$\mathbb{X} = \mathbb{X}^{\mathbb{X}}$ 是不可能的。
-\else
+}{
 These ``strands'' $\NewSym{strand.png}$ are simpler neural networks, for instance with smaller widths and depths, so they can be described by shorter weight vectors.  Precisely for this reason, a  $\NewSym{strand.png}$ can be presented as input to its own neural network.  We  \uline{cannot pass the entire network $\vect{F}$ to itself}, due to Cantor's theorem, which says $\mathbb{X} = \mathbb{X}^{\mathbb{X}}$ is impossible.
-\fi
+}
 
-Let $\overline{\vect{F}} = \NewSym{header.png} $ header, $\underline{\vect{F}} = \NewSym{footer.png} $ footer, $\vect{f}_i = \NewSym{strand.png}$ strands, then (abusing the $\bigcup$ notation):
+Let $\overline{\vect{F}} = \NewSym{header.png} $ header, $\underline{\vect{F}} = \NewSym{footer.png} $ footer, $\vect{f}_i = \NewSym{strand.png}$ strands, then (abusing the $\biguplus$ notation):
 \begin{equation}
-\vect{F} = \overline{\vect{F}} \circ \bigcup \vect{f}_i \circ \underline{\vect{F}}
+\vect{F} = \overline{\vect{F}} \circ \biguplus \vect{f}_i \circ \underline{\vect{F}}
 \end{equation}
-\ifdefined\chinchin
+\cc{
 每个 $\NewSym{strand.png}$ 大约对应於逻辑上的一个\textbf{命题}（proposition, 可以是条件命题或普通命题）。
-\else
+}{
 Each $\NewSym{strand.png}$ roughly corresponds to a single \textbf{proposition} in logic-based AI. Such propositions may be conditional or plain statements.
-\fi
+}
 
-\section{Structure of memories}
+读者或许会质疑，这个「条状」结构为什么一定要设计成这样？  其实我也觉得这个设计不够 elegant，甚至不太肯定它会不会 work。  在 \S\ref{decomposition-of-F} - \S\ref{spectral-compression} 我们会介绍一个数学上更优美的做法。 
 
-The ``main memory'' $\vect{F}$ can take the form of a tree ($\Tree$), graph ($\Graph$), or hyper-graph ($\Hypergraph$), with increasing complexity.
-
-The \textbf{mental state} $\vect{x}$, or ``working memory'', can also assume the above-mentioned forms.
-
-Currently I am not sure whether to place \textbf{episodic memory} inside $\vect{F}$ or as a separate module outside $\vect{F}$.
-
-We need to organize the $\NewSym{strand.png}$'s in the form of $\Tree$, $\Graph$ or $\Hypergraph$, in such a way that the resulting structure is also a neural network, or more generally a mathematical \textbf{function} in Hilbert space.
-
-But there is one simple way:  Basically, a deep network is automatically ``tree-like'' because of its many layers (\textbf{levels}) of weights organized hierarchically.  Thus we can build a network like this:
-\begin{equation}
-\vcenter{\hbox{\includegraphics[scale=0.7]{introspection-tree-bank.png}}}
-\end{equation}
-The {\color{red}attention mechanism} selects a number of $\NewSym{strand.png}$'s to be the \textbf{current state} or ``working memory''.  Notice that the input size is bigger than the output size, which reflects the structure of the logical \textbf{consequece operator} $\vdash$.
+%\section{Structure of memories}
+%
+%The ``main memory'' $\vect{F}$ can take the form of a tree ($\Tree$), graph ($\Graph$), or hyper-graph ($\Hypergraph$), with increasing complexity.
+%
+%The \textbf{mental state} $\vect{x}$, or ``working memory'', can also assume the above-mentioned forms.
+%
+%Currently I am not sure whether to place \textbf{episodic memory} inside $\vect{F}$ or as a separate module outside $\vect{F}$.
+%
+%We need to organize the $\NewSym{strand.png}$'s in the form of $\Tree$, $\Graph$ or $\Hypergraph$, in such a way that the resulting structure is also a neural network, or more generally a mathematical \textbf{function} in Hilbert space.
+%
+%But there is one simple way:  Basically, a deep network is automatically ``tree-like'' because of its many layers (\textbf{levels}) of weights organized hierarchically.  Thus we can build a network like this:
+%\begin{equation}
+%\vcenter{\hbox{\includegraphics[scale=0.7]{introspection-tree-bank.png}}}
+%\end{equation}
+%The {\color{red}attention mechanism} selects a number of $\NewSym{strand.png}$'s to be the \textbf{current state} or ``working memory''.  Notice that the input size is bigger than the output size, which reflects the structure of the logical \textbf{consequece operator} $\vdash$.
 
 \section{Overall architecture}
 
@@ -288,16 +287,17 @@ The overall \textbf{recurrent} setup operates like this:
 \begin{equation}
 \vcenter{\hbox{\includegraphics[scale=0.7]{introspection-simple.png}}}
 \end{equation}
+注意： $\NewSym{eye-symbol.png}$ 的原始输入不可以直接写入 $\NewSym{strand-vertical.png}$，因为 $\NewSym{strand-vertical.png}$ 会变成 $\NewSym{strand.png}$ = weights，而直接写 weights 的后果当然是灾难性的。  换句话说，$\NewSym{strand.png}$ 的结构是要用 emergent（涌现）的方法 learn 出来，不能被外界的输入干扰。  $\NewSym{eye-symbol.png}$ 和 $\NewSym{mouth-symbol.png}$ 的输入／输出要透过某些神经网络的 mapping 间接地做。
 
 Viewing the ``information flow'' in a simplified way, we notice a ``second'' pass through the network's internal weights:
 \begin{equation}
 \vcenter{\hbox{\includegraphics[scale=0.5]{introspection-flow.png}}}
 \end{equation}
-\ifdefined\chinchin
+\cc{
 这种操作上的结构在经典逻辑 AI 是「免费赠品」，但似乎还未有人提出过神经网络的做法。
-\else
+}{
 This operational architecture has always been a ``free gift'' in logic-based AI systems, but it seems that a neural-network implementation has not been proposed before.
-\fi
+}
 
 对应於经典逻辑 AI：
 \begin{equation}
@@ -309,21 +309,90 @@ This operational architecture has always been a ``free gift'' in logic-based AI 
 	\vect{x}_n  \cup \KB \sststile{}{} \vect{x}_{n+1}
 	\end{equation}
 
-	\item The \textbf{vertical pass} represents reading/writing information to/from $\KB$.  It performs 2 operations:
+	\item The \textbf{vertical pass} represents reading/writing information to/from $\KB$:
 
 	\begin{itemize}
-		\item $\vect{x} = $ working memory 会因为 \textbf{注意力} (attention) 而改变，所以 $\vect{x}_{n+1}$ 并不直接进入下一轮的 iteration，而是先经过 $\KB$ 的 attentional change。
-
-		\item $\vect{x}$ 是 $\KB$ 的一部分，所以 $\vect{x}_{n+1}$ 改变了，$\KB$ 也要 update。
+		\item \textbf{Update:}  $\vect{x}$ 是 $\KB$ 的一部分，所以 $\vect{x}_{n+1}$ 改变了，$\KB$ 也要 update。
+		
+		\item \textbf{Read:}  $\vect{x} = $ working memory 会因为 \textbf{注意力} (attention) 而改变，所以 $\vect{x}_{n+1}$ 并不直接进入下一轮的 iteration，而是先经过 $\KB$ 的 \textbf{attentional change}。
 	\end{itemize}
 
 \end{itemize}
 
-\ifdefined\chinchin
-\section{几何结构}
-\else
-\section{Geometric structure}
-\fi
+In logic-based AI this workflow has always been standard (but not made explicit):
+\begin{equation}
+\vcenter{\hbox{\includegraphics[scale=0.5]{introspection-flow-KB.png}}}
+\end{equation}
+
+\section{What is required of $\vect{F}$?}
+\label{decomposition-of-F}
+
+We now try to explain the meaning of
+\begin{equation}
+\vect{F} = \biguplus \vect{x}_i
+\end{equation}
+Our goal is to organize the $\NewSym{strand.png}$'s into a deep network.  What are the most general \textit{desiderata} for such a function $\vect{F}$?
+\begin{enumerate}
+
+	\item $\vect{F}(\vect{x}; \vect{\theta})$ is a function of $\vect{x}$ parametrized by $\vect{\theta}$.
+	
+	\item the parameters $\vect{\theta}$ is organized hierarchically with the ``deep'' property,\\
+	ie, high-level $\vect{\theta}_i$'s have higher ``degree''.
+	
+	\item $\vect{F}(\vect{x}; \vect{\theta})$ is capable of universal function approximation.
+	
+	\item $\vect{x}$ can be put into $\vect{\theta}$, ie, $\vect{\theta}$ is a collection of $\vect{x}$'s.
+	
+	\item $\vect{F}$ encodes \textbf{logical consequence}.
+	
+\end{enumerate}
+The last condition (F5) is hardest to satisfy, but there is an informal argument that may justify it.  For example, suppose:
+%\begin{equation}
+\begin{align}
+&\vect{x\vect{}} = \mbox{``\textit{all men are mortal}''} &\quad\quad& \mbox{is put into } \vect{F} = \KB. \nonumber \\
+&\vect{x}_0 = \mbox{``\textit{Socrates is a man}''} &\quad\quad& \mbox{is the new input.} \nonumber \\
+&\mbox{Then the expected output should be:} && \\
+&\vect{F}(\vect{x}_0) = \mbox{``\textit{Socrates is mortal}''} &\quad\quad& \nonumber
+\end{align}
+%\end{equation}
+凭什么认为 $\vect{F}$ 能满足类似上面的要求？  可以将一个 conditional proposition 看成是一个 mapping，它将 source domain $\mathbb{X}$ 的某个区域映射到 target domain（也是 $\mathbb{X}$）的某个区域，例如： 
+\begin{equation}
+\vcenter{\hbox{\includegraphics[scale=0.7]{F-as-a-mapping.png}}}
+\end{equation}
+\cc{
+	而我们有信心 $\vect{F}$ 能够表达这个 mapping 的原因，正如在机器视觉中，类似的 $\vect{F}$ 里面有些神经元可以辨认「眼、耳、口、鼻」等 features，原理是一样的。 换句话说，「X是人 $\rightarrow$ X会死」这句条件命题，其实和负责辨认「眼」这个 feature 的那些神经元，本质上是没有分别的。 
+}{
+	If we look at $\vect{F}$ as a deep network for visual recognition, some mid-level ``features'' such as ``eye'', ``nose'', ``mouth'' etc may be recognizable by $\vect{F}$, and we may surmise that each feature is associated with a local cluster of weights.  
+}
+
+\section{Decomposition of $\vect{F}$}
+
+换句话说，我们需要的是将 $\vect{F}$ 分拆成一些小部分，亦即是 $\vect{F}$ 对於某个输入 $\vect{x}$（ 及其邻域）的 \textbf{截面} (section, or restriction)。  假设获得了这些截面函数之后，我们再需要一个方法，将一个截面「放进」$\vect{F}$ 里面。
+\begin{equation}
+\vcenter{\hbox{\includegraphics[scale=0.7]{F-as-a-mapping-2.png}}}
+\end{equation}
+$\vect{x_0}$ = current state，它由若干个 $\NewSym{single-proposition-as-map.png} = $ \textbf{命题} 构成。  $\vect{F}: \vect{x}_0 \mapsto \vect{x}_0'$ 但实际上 $\vect{F}$ 的输出是 $\delta \vect{x}$，因为 $\vdash$ 的特性是它 \uline{每次只改变一个命题}，亦即 $\vect{x}_0' = \vect{x}_0 + \delta \vect{x}$，而 $\vect{x}_0'$ 也会「忘记」它里面的一个／几个命题。  更重要的是： $\vect{F}$ 的 restriction 也是一个命题 $ = \NewSym{single-proposition-as-map.png}$ $= \vect{F}|_{\Gamma}$ 其中 $\Gamma$ 是 $\vect{x}_0$ 的\textbf{邻域}。 注意： 下一步会将 $\delta \vect{x}$ 放进 $\vect{F}$ 里，但 $\delta \vect{x}$ 这个函数的 source 邻域并不是 $\Gamma$。
+
+（要透彻理解上面这幅图，需要熟悉命题逻辑和谓词逻辑的几何化）
+
+但是，当 $\vect{F}$ 是一个神经网络时，怎样获得「截面」？  我的想法是受到 TensorFlow Playground 的这图片启发的：
+\begin{equation}
+\vcenter{\hbox{\includegraphics[scale=0.5]{TensorFlow-visualization.png}}}
+\end{equation}
+可以看到 weights 的大小不同，它们对函数 $\vect{F}$ 在输入 $\vect{x}$ 的贡献也不同。  What we need is the set of \textbf{input-biased weights} of the neural network, in other words, they are the set of \textbf{outputs} (or ``activities'') of all neurons.  Let's denote it as $\vect{W}(\vect{x})$.
+
+\section{Spectral compression}
+\label{spectral-compression}
+
+Now we need a way to \textbf{compress} $\vect{W}(\vect{x})$ to prune out the low-contribution (ie, small) weights.  The Fourier (or wavelet) transform is a good candidate because it can compress $\vect{W}(\vect{x})$ to a \uline{fixed-length vector}, which can then be used as inputs to the neural network $\vect{F}$.
+
+The compression (which is a projection, $P$) is performed via:
+\begin{equation}
+P \; \vect{F} = \sum_{i=1}^{N} \langle \vect{F}, \Psi_i \rangle \Psi_i
+\end{equation}
+where $\{ \Psi_i \}_1^N$ is the basis set.  
+
+\section{\cc{几何结构}{Geometric structure}}
 
 [ 此段对熟悉微分几何的人或许有帮助，否则可以略过。]
 
@@ -355,22 +424,32 @@ $\vect{x} = \mbox{working memory} \subset \vect{\theta}$，$\vect{\theta}$ 代�
 \begin{equation}
 \vect{F}(\vect{x}) \equiv \vect{F}_{\vect{\theta}}(\vect{x}) \equiv \vect{F}(\vect{x} ; \vect{\theta})
 \end{equation}
-这和经典理论并没有抵触，因为经典理论中，$\vect{F}$ 也是位置 $\vect{x}$ 的函数。  更确切地说，位置空间其实是由 $\vect{\theta} \in \NewSym{bbTheta}$ 决定的，$\vect{x}$ 只是 $\vect{\theta}$ 的一部分。
+这和经典控制并没有抵触，因为经典理论中，$\vect{F}$ 也是位置 $\vect{x}$ 的函数。  更确切地说，位置空间其实是由 $\vect{\theta} \in \NewSym{bbTheta}$ 决定的，$\vect{x}$ 只是 $\vect{\theta}$ 的一部分。
+
+In general, the differential version seems to be a bad idea, as the increments of $\vect{x}$ is small, and the $\KB$ may be overwhelmed by recent memories of $\vect{x}$, which is a wasteful usage of weights.
 
 \section{Conclusion}
 
-Using the ``introspective architecture'' we solved 2 major problems in AGI:
+其实我自己也怀疑，这个 architecture 是否太复杂了，究竟值不值得做？  而暂时我只能说，它符合了两项非常难达到的要求： 
 \begin{itemize}
-	\item How to \uline{directly \textbf{insert} knowledge} into $\KB$.
-	
-	\item $\KB$ should be organized as a graph / tree.  But $\KB$ is also a neural network.  We found a ``tree-like'' organization of $\KB$ as a neural network.
+	\item $\KB$ is represented as a neural network (that admits a fast learning algorithm);
+
+	\item Symbolic knowledge can be directly \textbf{injected} into $\KB$.
 \end{itemize}
 
-It seems that the only major remaining problem now is the design of \textbf{episodic memory}.
+\section{Future direction}
+
+There may exist some variations and improvements under this general architecture.
+
+Another problem is the design of the \textbf{memory system}, in particular \textbf{episodic memory}.  This is the general idea, but details are still undecided:
+\begin{equation}
+\vcenter{\hbox{\includegraphics[scale=0.7]{memory-systems.png}}}
+\end{equation}
+
 
 \section*{Acknowledgements}
 
-Thanks to David Ha for his PathNet idea.
+Thanks to David Ha and his co-authors for their PathNet idea.
 
 \bibliographystyle{unsrtnat} % or number or aaai ...
 \bibliography{AGI-book}
