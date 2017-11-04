@@ -49,6 +49,7 @@
 \usepackage{url}			% for urls in bibliography
 \usepackage[normalem]{ulem} % underline unbroken with \uline
 \usepackage[numbers,sectionbib]{natbib}% if we use \package{url} we need to use natbib style
+\usepackage{unicode-math}
 
 %\def\chinchin{yes}          % ********** 用中文 *********
 % *************** Delete when not using Chinese or colors **********************
@@ -150,7 +151,33 @@
 
 \setcounter{section}{-1}
 \section{Introduction}
-% \label{sec:0}
+
+本文提出的 AGI architecture 揉合了三个结构：
+\renewcommand\labelenumi{(\theenumi)}
+\begin{enumerate}
+	\item \textbf{reinforcement learning} (RL)
+	\item classical \textbf{logic-based AI} (LBAI)
+	\item \textbf{deep neural network} (DNN)
+\end{enumerate}
+其中 (1) 是 智能系统 根据 奖励 学习的架构，这架构本身并没有什么内容，单靠它学习人类水平的智能，会太慢，所以要加入 (2) 的结构。 而 (3) 是目前为止最有效率的机器学习算法，它本身不是 AGI 的内在结构，我们只是将它应用到 AGI 系统的关键部分。 
+
+以下分述这三个成份。
+
+\section{Deep neural network}
+
+首先讲讲 神经网络。  它只是一个技术，它不是 AGI 内在的结构，我们只是将它应用到 AGI 上。  So let us first get this out of the way.
+
+所谓 神经网络 就是：
+
+
+\section{Reinforcement learning}
+
+
+
+\section{Logic-based AI}
+
+这部分是最复杂的结构，也是一般数学研究者比较不熟悉的。  
+
 
 \cc{
 智能系统需要有能力读／写它内部的知识。  例如说，一个比较蠢的智能系统可以用 sequence-to-sequence 的方式将中文翻译成英文： 

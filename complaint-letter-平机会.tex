@@ -1,0 +1,167 @@
+% TO-DO:
+
+% * change main format
+% * explain how is logical structure imposed on F, which is the single-step operator
+% * "incremental" structure of the single step operator F
+% * Cartesian closure of F
+% * the main question is how to exploit CCC to make learning dramatically faster, 
+%	-- that seems equivalent to direct knowledge insertion
+%	-- other than natural language, how can we have direct rules?
+%	-- and if yes, how do we express those rules?
+%	-- a section of F can become a state x, or should I say every state x is a section of F.
+%	-- x = an element of KB = a conditional rule = a section of F
+%	-- the question is how to "construct" an element x, it seems to contain a source and a target
+%	-- if we have a source and target, we might be able to construct the section of F that maps source to target, but we don't know the map section (the weights)
+%	-- usually, just after the application of F we know the responsible set, and the compression of this set would be the vector x.  We know how to de-compress x to get the weights back.
+%	-- F is determined by the weights, but the question is how can we find the weights that realize a section, but isn't this precisely the NN-learning problem, and the solution is back-prop?
+%	-- indeed, we can find the weights via back-prop, and then merge the responsible set into F, but that may be destructive
+%	-- and how come we already have the reflexive arch and yet we can't inject a simple rule into F?
+%	-- the generalization of F as NN means that F is able to generate new states x such that x is a compressed section of F, or a compressed responsible set.  Is this too much to ask for?
+%	-- the only advantage we have gained thus far seems to be that we can shove the state x directly into F without training, but the same effect may be achieved by back-prop.
+%	-- the expression of a general rule such as A -> B cannot be constructed de novo...
+%	-- reflexive is good if we need to process things like (x -> y) -> z.  
+
+%	* we have not addressed the problem of knowledge destruction
+
+% * Actions = all possible transtions in RL
+% * In RL, Q-learning is still unclear -- currently I'm using NN = transition F(x)
+%   -- U(x) -> U(x') so it seems that generalization can occur in Q-space (?)
+% * Structure of the turnstile is an important feature of the transition F(x)
+% * Explain difference with AIXI
+% * "inward" vs "outward" 
+
+\documentclass[orivec]{llncs}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[most]{tcolorbox}% for wrapping example in color box
+\usepackage{wrapfig}		% wrap figure beside text, used in example
+\usepackage{tikz-cd}		% commutative diagrams
+% \usepackage{amsfonts}
+\usepackage[normalem]{ulem}	% underline with line breaks: /uline
+\usepackage{enumitem}       % for using (A),(B),(C) in items...
+\usepackage{amsmath}		% for "cases"
+\usepackage{amsfonts}		% for frakur fonts
+\usepackage{mathrsfs}		% for curly "E" error symbol
+\usepackage{amssymb}		% for \multimap, \updownarrow, \bigstar
+\usepackage{turnstile}		% longer turnstiles
+\usepackage{sectsty}		% change section color
+\usepackage{hyperref}		% refs, links become clickable
+\usepackage{url}			% for urls in bibliography
+\usepackage[normalem]{ulem} % underline unbroken with \uline
+\usepackage[numbers,sectionbib]{natbib}% if we use \package{url} we need to use natbib style
+\usepackage{unicode-math}
+
+%\def\chinchin{yes}          % ********** 用中文 *********
+% *************** Delete when not using Chinese or colors **********************
+\ifdefined\chinchin
+\usepackage{xeCJK}
+\setCJKmainfont[BoldFont=SimHei,ItalicFont=KaiTi]{SimSun}
+\newcommand{\cc}[2]{#1}
+\else
+\newcommand{\cc}[2]{#2}
+\fi
+\usepackage{color}
+%\newcommand{\emp}[1]{\textbf{\textcolor{blue}{#1}}}
+\newcommand{\emp}[1]{\textbf{#1}}
+
+\sectionfont{\color{blue}} 
+\subsectionfont{\color{blue}} 
+\subsubsectionfont{\color{blue}} 
+\definecolor{green}{rgb}{0,0.7,0}
+\definecolor{grey}{rgb}{0.95,0.95,0.95}
+
+\usepackage{geometry}		% change paper size
+\geometry{
+  a4paper,         % or letterpaper
+  textwidth=18cm,  % llncs has 12.2cm
+  textheight=27cm, % llncs has 19.3cm
+  heightrounded,   % integer number of lines
+  hratio=1:1,      % horizontally centered
+  vratio=2:3,      % not vertically centered
+}
+\usepackage[fontsize=13pt]{scrextend}
+
+\newcommand{\tikzmark}[1]{\tikz[overlay,remember picture] \node (#1) {};}
+
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand*\sigmoid{\vcenter{\hbox{\includegraphics{sigmoid.png}}}}
+\newcommand*\rectifier{\vcenter{\hbox{\includegraphics{rectifier.png}}}}
+\newcommand*\KB{\vcenter{\hbox{\includegraphics{KB-symbol.png}}}}
+\newcommand*\KBsmall{\vcenter{\hbox{\includegraphics{KB-symbol2.png}}}}
+\newcommand*\NN{\vcenter{\hbox{\includegraphics{NN-symbol.png}}}}
+\newcommand*\Graph{\vcenter{\hbox{\includegraphics{../graph-symbol.png}}}}
+\newcommand*\Hypergraph{\vcenter{\hbox{\includegraphics{../hypergraph-symbol.png}}}}
+\newcommand*\Tree{\vcenter{\hbox{\includegraphics{../tree-symbol.png}}}}
+\newcommand*\NewSym[1]{\vcenter{\hbox{\includegraphics{#1}}}}
+\newcommand{\dashh}{\textemdash~}
+\newcommand{\english}[1]{\mbox{\textit{#1}}}
+\newcommand{\tab}{\hspace*{2cm}}
+
+% ***** Boxed variables inside math equations
+% \newcommand*{\boxedcolor}{black}
+\makeatletter
+% \renewcommand{\boxed}[1]{\textcolor{\boxedcolor}{%
+% \fbox{\normalcolor\m@th$\displaystyle#1$}}}
+% \setlength{\fboxsep}{1pt}
+\renewcommand{\boxed}[1]{\fbox{\m@th$\displaystyle\scalebox{0.9}{#1}$} \,}
+\makeatother
+
+\overfullrule=0mm
+
+\newsavebox{\MyName}
+\savebox{\MyName}{\includegraphics[scale=0.6]{YKY.png}}
+
+\title{\cc{投诉 HK Deep Learning 群组无故踢人}{HK Deep Learning group's unreasonable banning of membership}}
+%\normalsize{-- a minimalist cognitive architecture combining\\
+%reinforcement learning and deep learning}}
+\titlerunning{投诉 HK Deep Learning 群组}
+\author{\usebox{\MyName} (King-Yin Yan)
+% \\ \footnotesize{General.Intelligence@Gmail.com}
+%\and
+%Ben Goertzel
+%\and
+%Juan Carlos Kuri Pinto
+}
+\institute{General.Intelligence@Gmail.com}
+\date{\today}
+
+\begin{document}
+\let\labelitemi\labelitemii
+
+\maketitle
+
+\noindent
+\makebox[\linewidth]{\small \today}
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{2.8ex plus0.8ex minus0.8ex}
+% \setlength{\parskip}{2.8ex}
+
+\begin{abstract}
+\cc{
+	在
+}{
+	An intelligent agent needs the ability to access its own knowledge, which comes for free in classical logic-based AI, but neural networks are notorious for the ``black-box'' problem.  The solution is to have the network act on its own weights.
+}
+\end{abstract}
+
+%\begin{keywords}
+%reinforcement learning, control theory, deep learning, cognitive architecture
+%\end{keywords}
+
+\setcounter{section}{-1}
+\section{Introduction}
+
+这件事件表面上似乎不是种族歧视，但我想打个比喻： 有个画家上下倒转来画人像，当他完成之后，将画布倒转过来，所有观众立刻辨认出那是人像，而且是那人像是 李小龙，unmistakably。 而我现在提出的这个 case，我觉得如果用了某个 non-obvious 的角度来看，其实可以看到这个 case 明显是种族歧视，而并不是牵强的，只不过这个视角是 non-obvious。 
+
+在这件事件中我（基本上）没有做错，但我被踢了出群组，蒙受损失，而这个决定是 Joseph 做的。  他踢我出群组的原因是因为我学习了外国的技术，而且比他早，他稍为落后，而这一点令他不满。  然而，外国人也是人，他们比香港／中国进步，这一点所有香港人，包括 Joseph，都必需接受，whether willing or unwilling。  而 Joseph 在他的群组经常分享和赞同 外国最新的研究成果。  甚至他自己也说他喜欢积极地学习。  他踢我出群组是因为他不愿意承认我努力的成果，因为他似乎觉得所有香港人都应该「在同一起跑线上」。  但问题是他这个要求是不合理的，我只是做了我一直以来比较有专长的方向； 在香港进步的过程中，必然有些人较先进，有些人较落后，但他不容纳我比其他香港人较进步。  另一个比喻： 同样是女人，但当一个女人做了高级行政人员之后她就被革职，这性别歧视是成立的。 
+
+\renewcommand\labelenumi{(\theenumi)}
+\begin{enumerate}
+	\item \textbf{abc}
+\end{enumerate}
+
+\bibliographystyle{unsrtnat} % or number or aaai ...
+\bibliography{AGI-book}
+
+\end{document}
