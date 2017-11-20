@@ -1,55 +1,28 @@
 % TO-DO:
 
-% * change main format
-% * explain how is logical structure imposed on F, which is the single-step operator
-% * "incremental" structure of the single step operator F
-% * Cartesian closure of F
-% * the main question is how to exploit CCC to make learning dramatically faster, 
-%	-- that seems equivalent to direct knowledge insertion
-%	-- other than natural language, how can we have direct rules?
-%	-- and if yes, how do we express those rules?
-%	-- a section of F can become a state x, or should I say every state x is a section of F.
-%	-- x = an element of KB = a conditional rule = a section of F
-%	-- the question is how to "construct" an element x, it seems to contain a source and a target
-%	-- if we have a source and target, we might be able to construct the section of F that maps source to target, but we don't know the map section (the weights)
-%	-- usually, just after the application of F we know the responsible set, and the compression of this set would be the vector x.  We know how to de-compress x to get the weights back.
-%	-- F is determined by the weights, but the question is how can we find the weights that realize a section, but isn't this precisely the NN-learning problem, and the solution is back-prop?
-%	-- indeed, we can find the weights via back-prop, and then merge the responsible set into F, but that may be destructive
-%	-- and how come we already have the reflexive arch and yet we can't inject a simple rule into F?
-%	-- the generalization of F as NN means that F is able to generate new states x such that x is a compressed section of F, or a compressed responsible set.  Is this too much to ask for?
-%	-- the only advantage we have gained thus far seems to be that we can shove the state x directly into F without training, but the same effect may be achieved by back-prop.
-%	-- the expression of a general rule such as A -> B cannot be constructed de novo...
-%	-- reflexive is good if we need to process things like (x -> y) -> z.  
-
-%	* we have not addressed the problem of knowledge destruction
-
-% * Actions = all possible transtions in RL
-% * In RL, Q-learning is still unclear -- currently I'm using NN = transition F(x)
-%   -- U(x) -> U(x') so it seems that generalization can occur in Q-space (?)
-% * Structure of the turnstile is an important feature of the transition F(x)
-% * Explain difference with AIXI
-% * "inward" vs "outward" 
-
 \documentclass[orivec]{llncs}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage[most]{tcolorbox}% for wrapping example in color box
 \usepackage{wrapfig}		% wrap figure beside text, used in example
-\usepackage{tikz-cd}		% commutative diagrams
+% \usepackage{tikz-cd}		% commutative diagrams
 % \usepackage{amsfonts}
 \usepackage[normalem]{ulem}	% underline with line breaks: /uline
 \usepackage{enumitem}       % for using (A),(B),(C) in items...
-\usepackage{amsmath}		% for "cases"
-\usepackage{amsfonts}		% for frakur fonts
-\usepackage{mathrsfs}		% for curly "E" error symbol
-\usepackage{amssymb}		% for \multimap, \updownarrow, \bigstar
-\usepackage{turnstile}		% longer turnstiles
+% \usepackage{amsmath}		% for "cases"
+% \usepackage{amsfonts}		% for frakur fonts
+% \usepackage{mathrsfs}		% for curly "E" error symbol
+% \usepackage{amssymb}		% for \multimap, \updownarrow, \bigstar
+% \usepackage{turnstile}		% longer turnstiles
 \usepackage{sectsty}		% change section color
 \usepackage{hyperref}		% refs, links become clickable
 \usepackage{url}			% for urls in bibliography
 \usepackage[normalem]{ulem} % underline unbroken with \uline
 \usepackage[numbers,sectionbib]{natbib}% if we use \package{url} we need to use natbib style
-\usepackage{unicode-math}
+% \usepackage{unicode-math}
+\usepackage{titlesec}
+\usepackage{xpatch}
+\usepackage{changepage}
 
 %\def\chinchin{yes}          % ********** 用中文 *********
 % *************** Delete when not using Chinese or colors **********************
@@ -64,11 +37,31 @@
 %\newcommand{\emp}[1]{\textbf{\textcolor{blue}{#1}}}
 \newcommand{\emp}[1]{\textbf{#1}}
 
-\sectionfont{\color{blue}} 
-\subsectionfont{\color{blue}} 
+% ***************** Formatting of sections *********************
+\setcounter{secnumdepth}{3}
+\sectionfont{\bfseries\color{blue}} 
+% \subsectionfont{\color{blue}} 
 \subsubsectionfont{\color{blue}} 
 \definecolor{green}{rgb}{0,0.7,0}
 \definecolor{grey}{rgb}{0.95,0.95,0.95}
+
+% ********************* indentation of subsubsections **********************
+\let\subsubaw\adjustwidth
+\xpatchcmd{\subsubaw}
+  {\topsep}
+  {\labelwidth=0pt \labelsep=0pt \topsep}
+  {}{}
+\xpatchcmd{\subsubaw}
+  {\item[]}
+  {\refstepcounter{subsubsection}\item[\bfseries\color{blue}\thesubsubsection.\hspace{3pt} ]}
+  {}{}
+\newenvironment{subsub}
+  {\par\addvspace{3.25ex plus 1ex minus .2ex}%
+    \subsubaw{\parindent}{0pt}}
+  {\endadjustwidth}
+
+\titleformat{\subsection}[runin]{\large\bfseries\color{blue}}{\thesubsection.}{4pt}{}
+%\titleformat{\subsubsection}[runin]{\bfseries\color{blue}}{\thesubsubsection.}{1em}{}
 
 \usepackage{geometry}		% change paper size
 \geometry{
@@ -81,17 +74,6 @@
 }
 \usepackage[fontsize=13pt]{scrextend}
 
-\newcommand{\tikzmark}[1]{\tikz[overlay,remember picture] \node (#1) {};}
-
-\newcommand{\vect}[1]{\boldsymbol{#1}}
-\newcommand*\sigmoid{\vcenter{\hbox{\includegraphics{sigmoid.png}}}}
-\newcommand*\rectifier{\vcenter{\hbox{\includegraphics{rectifier.png}}}}
-\newcommand*\KB{\vcenter{\hbox{\includegraphics{KB-symbol.png}}}}
-\newcommand*\KBsmall{\vcenter{\hbox{\includegraphics{KB-symbol2.png}}}}
-\newcommand*\NN{\vcenter{\hbox{\includegraphics{NN-symbol.png}}}}
-\newcommand*\Graph{\vcenter{\hbox{\includegraphics{../graph-symbol.png}}}}
-\newcommand*\Hypergraph{\vcenter{\hbox{\includegraphics{../hypergraph-symbol.png}}}}
-\newcommand*\Tree{\vcenter{\hbox{\includegraphics{../tree-symbol.png}}}}
 \newcommand*\NewSym[1]{\vcenter{\hbox{\includegraphics{#1}}}}
 \newcommand{\dashh}{\textemdash~}
 \newcommand{\english}[1]{\mbox{\textit{#1}}}
@@ -111,7 +93,7 @@
 \newsavebox{\MyName}
 \savebox{\MyName}{\includegraphics[scale=0.6]{YKY.png}}
 
-\title{\cc{投诉 HK Deep Learning 群组无故踢人}{HK Deep Learning group's unreasonable banning of membership}}
+\title{\cc{投诉 HK Deep Learning 群组踢人}{HK Deep Learning group's unreasonable banning of membership}}
 %\normalsize{-- a minimalist cognitive architecture combining\\
 %reinforcement learning and deep learning}}
 \titlerunning{投诉 HK Deep Learning 群组}
@@ -133,7 +115,7 @@
 \noindent
 \makebox[\linewidth]{\small \today}
 
-\setlength{\parindent}{0em}
+%\setlength{\parindent}{0em}
 \setlength{\parskip}{2.8ex plus0.8ex minus0.8ex}
 % \setlength{\parskip}{2.8ex}
 
@@ -156,12 +138,46 @@
 
 在这件事件中我（基本上）没有做错，但我被踢了出群组，蒙受损失，而这个决定是 Joseph 做的。  他踢我出群组的原因是因为我学习了外国的技术，而且比他早，他稍为落后，而这一点令他不满。  然而，外国人也是人，他们比香港／中国进步，这一点所有香港人，包括 Joseph，都必需接受，whether willing or unwilling。  而 Joseph 在他的群组经常分享和赞同 外国最新的研究成果。  甚至他自己也说他喜欢积极地学习。  他踢我出群组是因为他不愿意承认我努力的成果，因为他似乎觉得所有香港人都应该「在同一起跑线上」。  但问题是他这个要求是不合理的，我只是做了我一直以来比较有专长的方向； 在香港进步的过程中，必然有些人较先进，有些人较落后，但他不容纳我比其他香港人较进步。  另一个比喻： 同样是女人，但当一个女人做了高级行政人员之后她就被革职，这性别歧视是成立的。 
 
+
+\section{关於投诉人 甄景贤}
+
 \renewcommand\labelenumi{(\theenumi)}
 \begin{enumerate}
 	\item \textbf{abc}
 \end{enumerate}
 
-\bibliographystyle{unsrtnat} % or number or aaai ...
-\bibliography{AGI-book}
+\section{关於被告 Joseph Cheng}
+
+%\titleformat*{\subsection}[runin]{}{\thesubsection}{}{}[]
+%\titleformat*{\subsection}[runin]{\normalsize\textbf}{\thesubsection}
+
+\subsection{} 我在 2011年 11月 认识 Joseph，当时是在 创业活动 "Startup Weekend" 中的同一团队，当时我问 Joseph 他的技术背景，发现他原来没有上大学，他职业是自己开公司帮人写网页，而他当时连 recursion 是什么都不知道（那是电算机科学中的基本原理，本科生都应该懂的），也不懂得微积分；  我当时的反应是有点失望，觉得香港的技术人才水平不够高。  然而，到了 2017 年，我亲眼目睹 Joseph 已经变成了香港 deep learning（即「深度学习」，人工智能中现时最火的技术）方面的一个专家，对於他的进步我觉得很欣喜，同时我察觉到 Joseph 这个人很聪明。
+
+\subsection{} From 2012 May - 2014, 我曾经雇用 Joseph 写一些 AI 程式，同时我有教 Joseph 一些 AI 方面的知识。 这时 Joseph 开始对 AI 感到很有兴趣。  我一直把 Joseph 当作 研发的合作夥伴。
+
+\subsection{} 我在 2012 年开始，组织了HK "Machine Learners" 群组，交流人工智能方面的学术，并且租用某些场地 做研讨会，大约做了 1-2 年时间，但反应不热烈（可能是数学方面比较高深）。 后来 Joseph 在 2017 年开设类似群组，我为了不和他「抢人流」，所以没有提出反对，而是加入了他们的群组。 
+
+\section{对精神病的歧视}
+
+\subsection{我曾因精神病住院} 在 2009 年底，我因为和家人吵架，在不太情愿的情况下进了（政府的）精神病院，经医生们诊断后，认为我有精神分裂症，被强制住院 3 星期，之后出院，在家疗养及吃药、定期覆诊，大约一年后停药。    
+
+\subsection{} 覆诊时，精神科医生向我表示我有权申请香港政府给残疾人士的福利，但我觉得自己仍有能力赚钱和照顾自己，所以没有申请，但在政府的医疗记录上有关於我的精神病纪录。 
+
+\subsection{我的精神病成因} 其实我的精神病问题是 paranoia（被害妄想症），亦即我经常怀疑别人在监视我，令我情绪上很困扰。   但我自己亦意识到这个 paranoia 可能并不实际存在，所以只是一种 \textbf{怀疑}。 例如某些男人会病态地怀疑自己的妻子不贞，但如果那人的妻子是比较风骚的话，则这种怀疑亦未必算是病态的，甚至那妻子的不忠可能是真的。  这一点很重要，因为严格来说，我平日的表现没有不合常理的行为，只是内心很不快乐，但这个「病」并没有太大地影响我的日常工作。  精神科医生亦对我说，我在同类的病人中是有较高的 cognitive function。 覆诊期间，我在某国际人工智能 journal 上发表了一篇论文，覆诊医生觉得我在生活上大有进步。 
+
+\subsection{我写了一本关於自己精神病经历的书} 自 2013 Sept 开始，我在网上发表《妄想症》一书，内容大致上有几点：
+
+\begin{subsub}
+描述我在美国留学后开始有 paranoia 的经过
+\end{subsub}
+
+\begin{subsub}
+我对我的美国堂妹迷恋但遭拒绝的经过； in particular，我在 1990's 年代末，结识美国堂妹，对她在文化上的优越感，我觉得很羡慕又妒忌。  后来被拒绝之后我感到恼羞成怒，几乎想杀了她报复，这是我一生中感到最极端的愤怒情绪。 我之所以在此提到这点，是因为我发觉很多香港人接触到美国文化中的进步思想，都会产生不适应的情况，而对那些已经 Westernize 的人产生极度怨恨，包括 Joseph 都是属於这一情况，所以这点是有关的。
+\end{subsub}
+
+\section{对香港人的歧视}
+
+%\bibliographystyle{unsrtnat} % or number or aaai ...
+%\bibliography{AGI-book}
 
 \end{document}
